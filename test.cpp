@@ -76,4 +76,5 @@ int START_ROW = 1, STOP_ROW = 1000000, STEP_ROW = 5000;
 		}
   }
   log.save("log.csv", arma::file_type::csv_ascii);
+	
 }
