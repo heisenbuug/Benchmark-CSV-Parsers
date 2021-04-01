@@ -73,5 +73,6 @@ int main()
 			counter++;
 		}
 	}
+	
 	log.save("log.csv", arma::file_type::csv_ascii);
 }
