@@ -79,7 +79,7 @@ int main()
 
       // Load using fastcsv
       start = std::chrono::high_resolution_clock::now();
-      io::CSVReader<4> doc_fast_csv("data/test.csv");
+      io::CSVReader<50> doc_fast_csv("data/test.csv");
       std::vector<float> row_elements;
       std::stringstream row_ss;
       arma::fmat mat_fcsv(row_sizes(i), col_sizes(j));
