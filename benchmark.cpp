@@ -1,3 +1,6 @@
+// use the above line everytime
+// export LD_LIBRARY_PATH="/home/heisenbug/Dev/mlpack/mlpack-lib/build/lib/:$LD_LIBRARY_PATH"
+
 #include <rapidcsv.h>
 #include <csv.h>
 #include <iostream>
@@ -15,14 +18,14 @@ void create_csv(size_t n_rows, size_t n_cols)
 
 int main()
 {
-  int START_ROW = 1, STOP_ROW = 1000000, STEP_ROW = 5000;
+  int START_ROW = 1, STOP_ROW = 100000, STEP_ROW = 5000;
 
   arma::vec row_sizes = arma::regspace(START_ROW, STEP_ROW, STOP_ROW);
   arma::vec col_sizes = {5, 15, 25};
 
   arma::mat log;
   log.set_size(row_sizes.n_elem * col_sizes.n_elem, 6);
-  arma::mat test;
+  arma::fmat test;
 
   std::cout << "Total combinations: " << log.n_rows << '\n';
 
@@ -58,18 +61,17 @@ int main()
       // Load using rapidcsv
       start = std::chrono::high_resolution_clock::now();
       // Intialize without header
-      rapidcsv::Document doc_rapid_csv("data/test.csv", rapidcsv::LabelParams(-1, -1));
+      rapidcsv::Document doc("data/test.csv", rapidcsv::LabelParams(-1, -1));
       // is it safe or recommonded to fill mat at the time of initialization?
-      arma::fmat mat_rcsv(doc_rapid_csv.GetRowCount(), doc_rapid_csv.GetColumnCount());
-      std::vector<float> column;
-
-      for(int i = 0; i < doc_rapid_csv.GetColumnCount(); i++)
+      arma::fmat mat_rcsv(doc.GetRowCount(), doc.GetColumnCount());
+      std::vector<float> row;
+      for(int i = 0; i < doc.GetRowCount(); i++)
       {
-        column = doc_rapid_csv.GetColumn<float>(i);
-        arma::fvec column_vector(column);
-        mat_rcsv.col(i) = column_vector;
+        row = doc.GetRow<float>(i);
+        arma::frowvec column_vector(row);
+        mat_rcsv.row(i) = column_vector;
       }
-
+      mat_rcsv = mat_rcsv.t();
       stop = std::chrono::high_resolution_clock::now();
       time_taken = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
       log(counter, 4) = time_taken.count();
@@ -95,6 +97,7 @@ int main()
         mat_fcsv.row(i) = row_vector;
         i++;
       }
+      mat_fcsv = mat_fcsv.t();
       stop = std::chrono::high_resolution_clock::now();
       time_taken = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
       log(counter, 5) = time_taken.count();
