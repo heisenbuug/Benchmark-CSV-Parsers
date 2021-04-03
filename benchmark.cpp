@@ -1,6 +1,3 @@
-// use the above line everytime
-// export LD_LIBRARY_PATH="/home/heisenbug/Dev/mlpack/mlpack-lib/build/lib/:$LD_LIBRARY_PATH"
-
 #include <rapidcsv.h>
 #include <csv.h>
 #include <iostream>
@@ -18,7 +15,7 @@ void create_csv(size_t n_rows, size_t n_cols)
 
 int main()
 {
-  int START_ROW = 1, STOP_ROW = 100000, STEP_ROW = 5000;
+  int START_ROW = 1, STOP_ROW = 1000000, STEP_ROW = 5000;
 
   arma::vec row_sizes = arma::regspace(START_ROW, STEP_ROW, STOP_ROW);
   arma::vec col_sizes = {5, 15, 25};
