@@ -1,6 +1,3 @@
-// use the above line everytime
-// export LD_LIBRARY_PATH="/home/heisenbug/Dev/mlpack/mlpack-lib/build/lib/:$LD_LIBRARY_PATH"
-
 #include <rapidcsv.h>
 #include <csv.h>
 #include <iostream>
@@ -27,7 +24,7 @@ int main()
   log.set_size(row_sizes.n_elem * col_sizes.n_elem, 6);
   arma::mat test;
 
-  std::cout << "Total combinations: " << test.n_rows << '\n';
+  std::cout << "Total combinations: " << log.n_rows << '\n';
 
   int counter = 0;
   for (int i = 0; i < row_sizes.n_elem; i++)
