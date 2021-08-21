@@ -1,5 +1,5 @@
-#include <rapidcsv.h>
-#include <csv.h>
+// export LD_LIBRARY_PATH=/home/heisenbug/mlpack/mlpack/mlpack-master/build/lib/
+// export LD_LIBRARY_PATH=/home/heisenbug/mlpack/mlpack/mlpack-local/build/lib/
 #include <iostream>
 #include <vector>
 #include <mlpack/core.hpp>
@@ -15,23 +15,25 @@ void create_csv(size_t n_rows, size_t n_cols)
 
 int main()
 {
+  std::string path = "data/test.csv";
   int START_ROW = 1, STOP_ROW = 1000000, STEP_ROW = 5000;
 
   arma::vec row_sizes = arma::regspace(START_ROW, STEP_ROW, STOP_ROW);
   arma::vec col_sizes = {5, 15, 25};
 
   arma::mat log;
-  log.set_size(row_sizes.n_elem * col_sizes.n_elem, 6);
+  log.set_size(row_sizes.n_elem * col_sizes.n_elem, 5);
   arma::fmat test;
 
   std::cout << "Total combinations: " << log.n_rows << '\n';
 
   int counter = 0;
-  for (int i = 0; i < row_sizes.n_elem; i++)
+  for (int i = 1; i < row_sizes.n_elem; i++)
   {
-    for (int j = 0; j < col_sizes.n_elem; j++)
+    for (int j = 1; j < col_sizes.n_elem; j++)
     {
-      std::cout << "Count: " << counter << '\n';
+      if(counter % 1000 == 0)
+        std::cout << "Count: " << counter << '\n';
 
       // log row size and column size
       log(counter, 0) = row_sizes(i);
@@ -40,67 +42,29 @@ int main()
       // creating test.csv
       create_csv(row_sizes(i), col_sizes(j));
 
-      // Load using default csv parser
+      // Load using armadillo's csv parser
       auto start = std::chrono::high_resolution_clock::now();
-      test.load("data/test.csv", arma::file_type::csv_ascii);
+      test.load(path, arma::file_type::csv_ascii);
       auto stop = std::chrono::high_resolution_clock::now();
       auto time_taken = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
       log(counter, 2) = time_taken.count();
-
-      // Load using mlpack's custom csv parser
-      mlpack::data::DatasetInfo info;
+      
+      // Load using mlpack's new csv parser
       start = std::chrono::high_resolution_clock::now();
-      mlpack::data::Load("data/test.csv", test, info, false, true);
+      mlpack::data::Load(path, test);
       stop = std::chrono::high_resolution_clock::now();
       time_taken = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
       log(counter, 3) = time_taken.count();
 
-      // Load using rapidcsv
+      // Load using mlpack's new custom csv parser without boost
+      mlpack::data::DatasetInfo info;
       start = std::chrono::high_resolution_clock::now();
-      // Intialize without header
-      rapidcsv::Document doc("data/test.csv", rapidcsv::LabelParams(-1, -1));
-      // is it safe or recommonded to fill mat at the time of initialization?
-      arma::fmat mat_rcsv(doc.GetRowCount(), doc.GetColumnCount());
-      std::vector<float> row;
-      for(int i = 0; i < doc.GetRowCount(); i++)
-      {
-        row = doc.GetRow<float>(i);
-        arma::frowvec column_vector(row);
-        mat_rcsv.row(i) = column_vector;
-      }
-      mat_rcsv = mat_rcsv.t();
+      mlpack::data::Load(path, test, info);
       stop = std::chrono::high_resolution_clock::now();
       time_taken = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
       log(counter, 4) = time_taken.count();
-
-      // Load using fastcsv
-      start = std::chrono::high_resolution_clock::now();
-      io::CSVReader<50> doc_fast_csv("data/test.csv");
-      std::vector<float> row_elements;
-      std::stringstream row_ss;
-      arma::fmat mat_fcsv(row_sizes(i), col_sizes(j));
-      int i = 0;
-      while(char*line = doc_fast_csv.next_line())
-      {
-        std::stringstream row_ss(line);
-        
-        while (row_ss.good()) {
-          std::string substr;
-          getline(row_ss, substr, ',');
-          row_elements.push_back(std::stod(substr));
-        }
-        arma::frowvec row_vector(row_elements);
-        row_elements.clear();
-        mat_fcsv.row(i) = row_vector;
-        i++;
-      }
-      mat_fcsv = mat_fcsv.t();
-      stop = std::chrono::high_resolution_clock::now();
-      time_taken = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-      log(counter, 5) = time_taken.count();
-
       counter++;
     }
   }
-  log.save("logs/log.csv", arma::file_type::csv_ascii);
+  log.save("logs/old-parser.csv", arma::file_type::csv_ascii);
 }
